@@ -10,6 +10,8 @@ using Azure.Identity;
 using System.Dynamic;
 using swensen_api.Class;
 using System.Globalization;
+using System.Web;
+using System.Runtime.InteropServices;
 
 namespace swensen_api.Controllers;
 
@@ -30,9 +32,13 @@ public class ProductController : ControllerBase
     string _error = "";
     public Dictionary<string, dynamic> returnData = new Dictionary<string, dynamic>();
 
-    public class ReqData
+    public class ReqRemove
     {
         public string id { get; set; }
+    }
+    public class ReqList
+    {
+        public string cate_id { get; set; }
     }
 
     public class ReqUser
@@ -46,42 +52,53 @@ public class ProductController : ControllerBase
         public string birth_date { get; set; }
     }
 
-    public class ReqLogin
+    public class ReqPro
     {
-        public string email { get; set; }
-        public string password { get; set; }
+        public string name { get; set; }
+        public string cage_id { get; set; }
+
+        public List<IFormFile> image { get; set; }
+    }
+
+    public class image
+    {
+        public string cage_id { get; set; }
     }
 
     [HttpPost("list")]
-    public ActionResult Detail([FromBody] ReqData req)
+    public ActionResult Detail([FromBody] ReqList req)
     {
         var _transection = _dbContext.Database.BeginTransaction();
         try
         {
             dynamic data = new ExpandoObject();
             List<dynamic> list = new List<dynamic>();
-            if (!string.IsNullOrEmpty(req.id))
+            var resPro = _dbContext.Product.ToList();
+            // if (!string.IsNullOrEmpty(req.cate_id))
+            // {
+            //     resPro = resPro.Where()
+            // }
+
+            // resPro = _dbContext.Product.ToList();
+            if (resPro != null)
             {
-                var resProduct = _dbContext.Product.ToList();
-                if (resProduct.Count > 0)
+                foreach (var item in resPro)
                 {
-                    foreach (var item in resProduct)
+                    list.Add(new
                     {
-                        list.Add(new
-                        {
-                            id = item.ID,
-                            name = item.NAME,
-                            file_image = item.FILE_IMAGE,
-                            recommend = item.RECOMMEND,
-                            is_delete = item.IS_DELETE,
-                            promotion = item.PROMOTION,
-                            news = item.NEWS,
-                            cate_id = item.CATE_ID,
-                        });
-                    }
+                        id = item.ID,
+                        name = item.NAME,
+                        file_image = $"data:image/{item.FILE_EXE.Replace(".", "")};base64," + Convert.ToBase64String(item.FILE_IMAGE),
+                        recommend = item.RECOMMEND,
+                        is_delete = item.IS_DELETE,
+                        promotion = item.PROMOTION,
+                        news = item.NEWS,
+                        cate_id = item.CATE_ID,
+                        cate_name = _dbContext.Category.Where(x => x.ID == item.CATE_ID).Select(x => x.NAME_TH).FirstOrDefault(),
+                    });
                 }
 
-                returnData["data"] = data;
+                returnData["data"] = list;
             }
 
         }
@@ -97,40 +114,102 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("submit")]
-    public ActionResult Register([FromBody] ReqUser req)
+    public ActionResult Submit([FromForm] ReqPro req)
     {
         var _transection = _dbContext.Database.BeginTransaction();
         try
         {
             dynamic data = new ExpandoObject();
 
-            if (!string.IsNullOrEmpty(req.email))
+            if (req.image.Count() > 0)
             {
-                var resUser = _dbContext.Users.FirstOrDefault(x => x.EMAIL == req.email);
-                if (resUser != null)
+                foreach (var img in req.image)
                 {
-                    _status = false;
-                    _message = "Email ซ้ำ กรุณาใช้อีเมลอื่น";
-                }
-                else
-                {
-                    var newUser = new Users();
-                    newUser.ID = Utilities.GetUIID();
-                    newUser.EMAIL = !string.IsNullOrEmpty(req.email) ? req.email : "";
-                    newUser.PASSWORD = !string.IsNullOrEmpty(req.password) ? req.password : "";
-                    newUser.FIRST_NAME = !string.IsNullOrEmpty(req.first_name) ? req.first_name : "";
-                    newUser.LAST_NAME = !string.IsNullOrEmpty(req.last_name) ? req.last_name : "";
-                    newUser.TEL = !string.IsNullOrEmpty(req.tel) ? req.tel : "";
-                    newUser.GENDER = !string.IsNullOrEmpty(req.gender) ? req.gender : "";
-                    newUser.BIRTH_DATE = !string.IsNullOrEmpty(req.birth_date) ? DateTime.Parse(req.birth_date, CultureInfo.InvariantCulture) : null;
-                    newUser.IS_ACTIVE = 1;
-                    newUser.IS_DELETE = 0;
-                    _dbContext.Users.Add(newUser);
-                    _dbContext.SaveChanges();
+                    if (img.Length > 0)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            // get binary of img
+                            img.CopyTo(ms);
 
-                    _transection.Commit();
-                    _status = true;
+                            var fileBytes = ms.ToArray();
+
+                            // string fileExt = MimeTypeMap.GetExtension(img.ContentType);
+                            string fileExt = Path.GetExtension(img.FileName);
+
+                            string fileId = Utilities.GetUIID();
+
+                            // Console.WriteLine("audio/wav -> " + MimeTypeMap.GetExtension(img.ContentType));
+
+                            var fileUpload = new ProductModel();
+
+                            fileUpload.ID = fileId;
+                            fileUpload.NAME = req.name;
+                            fileUpload.FILE_IMAGE = fileBytes;
+                            fileUpload.FILE_EXE = fileExt;
+                            fileUpload.RECOMMEND = 0;
+                            fileUpload.IS_ACTIVE = 1;
+                            fileUpload.IS_DELETE = 0;
+                            fileUpload.PROMOTION = 0;
+                            fileUpload.NEWS = 0;
+                            fileUpload.CATE_ID = req.cage_id;
+
+                            _dbContext.Product.Add(fileUpload);
+                            _dbContext.SaveChanges();
+                        }
+                    }
                 }
+
+                _transection.Commit();
+                _status = true;
+                _message = "";
+            }
+            else
+            {
+                _status = false;
+                _message = "กรุณาแนบรูปภาพ";
+            }
+
+            // returnData["data"] = data;
+
+        }
+        catch (Exception ex)
+        {
+            _transection.Rollback();
+            _status = false;
+            _message = !string.IsNullOrEmpty(ex.Message) ? ex.Message : "";
+            _error = ex.InnerException != null ? ex.InnerException.Message : "Not Inner Exception";
+        }
+
+        return StatusCode(200, new { status = _status, message = _message, error = _error, results = returnData });
+    }
+
+    [HttpPost("remove")]
+    public ActionResult Remove([FromBody] ReqRemove req)
+    {
+        var _transection = _dbContext.Database.BeginTransaction();
+        try
+        {
+            dynamic data = new ExpandoObject();
+
+            if (!string.IsNullOrEmpty(req.id))
+            {
+                var res = _dbContext.Product.Where(x => x.ID == req.id).FirstOrDefault();
+
+                if (res != null)
+                {
+                    _dbContext.Product.Remove(res);
+                    _dbContext.SaveChanges();
+                }
+
+                _transection.Commit();
+                _status = true;
+                _message = "";
+            }
+            else
+            {
+                _status = false;
+                _message = "กรุณาแนบรูปภาพ";
             }
 
             // returnData["data"] = data;

@@ -11,9 +11,12 @@ public class ProductModel
     [Column(TypeName = "BLOB")]
     public byte[] FILE_IMAGE { get; set; }
     public int RECOMMEND { get; set; }
+    public int IS_ACTIVE { get; set; }
     public int IS_DELETE { get; set; }
 
     public int PROMOTION { get; set; }
     public int NEWS { get; set; }
     public string CATE_ID { get; set; }
+    public decimal PRICE { get; set; }
+    public string FILE_EXE { get; set; }
 }
