@@ -15,24 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-    // options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 #endregion
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowAngularOrigins",
-//     builder =>
-//     {
-//         builder.WithOrigins() 
-//                .AllowAnyHeader()
-//                .AllowAnyMethod();
-//     });
-// });
 
 #region policy
 builder.Services.AddCors(options =>
@@ -50,7 +38,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 app.UseCors("CorsPolicy");
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

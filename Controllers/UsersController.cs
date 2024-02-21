@@ -28,6 +28,7 @@ public class UsersController : ControllerBase
     bool _status = true;
     string _message = "";
     string _error = "";
+    int _status_code = 200;
     public Dictionary<string, dynamic> returnData = new Dictionary<string, dynamic>();
 
     public class ReqData
@@ -49,7 +50,9 @@ public class UsersController : ControllerBase
     public class ReqLogin
     {
         public string email { get; set; }
+        public string username { get; set; }
         public string password { get; set; }
+        public string type { get; set; }
     }
 
     [HttpPost("detail")]
@@ -142,36 +145,64 @@ public class UsersController : ControllerBase
         {
             dynamic data = new ExpandoObject();
 
-            var resUsers = _dbContext.Users.FirstOrDefault(x => x.EMAIL == req.email && x.PASSWORD == req.password);
-            if (resUsers == null)
+            if (req.type == "admin")
             {
-                _status = false;
-                _message = "ไม่พบบัญชีผู้ใช้ กรุณาลองอีกครั้ง";
+                var resAdmin = _dbContext.Admin.FirstOrDefault(x => x.USERNAME == req.username && x.PASSWORD == req.password);
+                if (resAdmin != null)
+                {
+                    data.id = resAdmin.ID;
+                    data.email = resAdmin.EMAIL;
+                    data.username = resAdmin.USERNAME;
+                    data.first_name = resAdmin.FIRST_NAME;
+                    data.last_name = resAdmin.LAST_NAME;
+                    data.tel = resAdmin.TEL;
+                    data.type = "admin";
+                }
+                else
+                {
+
+                    _status = false;
+                    _message = "ไม่พบบัญชีผู้ใช้ กรุณาลองอีกครั้ง";
+                    _status_code = 200;
+                }
             }
             else
             {
-                data.id = resUsers.ID;
-                data.email = resUsers.EMAIL;
-                data.password = resUsers.PASSWORD;
-                data.first_name = resUsers.FIRST_NAME;
-                data.last_name = resUsers.LAST_NAME;
-                data.tel = resUsers.TEL;
-                data.gender = resUsers.GENDER;
-                data.birth_date = resUsers.BIRTH_DATE;
-                returnData["data"] = data;
+                var resUsers = _dbContext.Users.FirstOrDefault(x => x.EMAIL == req.email && x.PASSWORD == req.password);
+                if (resUsers != null)
+                {
+                    data.id = resUsers.ID;
+                    data.email = resUsers.EMAIL;
+                    data.username = resUsers.USERNAME;
+                    data.first_name = resUsers.FIRST_NAME;
+                    data.last_name = resUsers.LAST_NAME;
+                    data.tel = resUsers.TEL;
+                    data.gender = resUsers.GENDER;
+                    data.birth_date = resUsers.BIRTH_DATE;
+                    data.type = "user";
+                }
+                else
+                {
+                    _status = false;
+                    _message = "ไม่พบบัญชีผู้ใช้ กรุณาลองอีกครั้ง";
+                    _status_code = 200;
+                }
             }
 
 
+            returnData["data"] = data;
         }
         catch (Exception ex)
         {
             _transection.Rollback();
+
+            _status_code = 500;
             _status = false;
             _message = !string.IsNullOrEmpty(ex.Message) ? ex.Message : "";
             _error = ex.InnerException != null ? ex.InnerException.Message : "Not Inner Exception";
         }
 
-        return StatusCode(200, new { status = _status, message = _message, error = _error, results = returnData });
+        return StatusCode(_status_code, new { status = _status, message = _message, error = _error, results = returnData });
     }
 
 

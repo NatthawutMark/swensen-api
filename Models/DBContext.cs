@@ -14,4 +14,5 @@ public class DBContext : DbContext
     public DbSet<Users> Users { get; set; }
     public DbSet<ProductModel> Product { get; set; }
     public DbSet<CategoryModel> Category { get; set; }
+    public DbSet<AdminModel> Admin { get; set; }
 }
