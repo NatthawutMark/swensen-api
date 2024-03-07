@@ -11,8 +11,10 @@ public class DBContext : DbContext
     {
     }
 
-    public DbSet<Users> Users { get; set; }
-    public DbSet<ProductModel> Product { get; set; }
-    public DbSet<CategoryModel> Category { get; set; }
-    public DbSet<AdminModel> Admin { get; set; }
+    public DbSet<ProductModel> PRODUCT { get; set; }
+    public DbSet<ProductImageModel> PRODUCT_IMAGE { get; set; }
+    public DbSet<CategoryModel> CATEGORY { get; set; }
+    public DbSet<AdminModel> ADMIN { get; set; }
+    public DbSet<Status> STATUS { get; set; }
+    public DbSet<Users> USERS { get; set; }
 }

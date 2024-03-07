@@ -38,6 +38,7 @@ public class UsersController : ControllerBase
 
     public class ReqUser
     {
+        public string username { get; set; }
         public string email { get; set; }
         public string password { get; set; }
         public string first_name { get; set; }
@@ -64,7 +65,7 @@ public class UsersController : ControllerBase
             dynamic data = new ExpandoObject();
             if (!string.IsNullOrEmpty(req.id))
             {
-                var resUser = _dbContext.Users.FirstOrDefault(x => x.ID == req.id);
+                var resUser = _dbContext.USERS.FirstOrDefault(x => x.ID == req.id);
                 if (resUser != null)
                 {
                     data.id = resUser.ID;
@@ -96,26 +97,27 @@ public class UsersController : ControllerBase
 
             if (!string.IsNullOrEmpty(req.email))
             {
-                var resUser = _dbContext.Users.FirstOrDefault(x => x.EMAIL == req.email);
+                var resUser = _dbContext.USERS.FirstOrDefault(x => x.USERNAME == req.username);
                 if (resUser != null)
                 {
                     _status = false;
-                    _message = "Email ซ้ำ กรุณาใช้อีเมลอื่น";
+                    _message = "Username ซ้ำ กรุณาใช้อีเมลอื่น";
                 }
                 else
                 {
                     var newUser = new Users();
                     newUser.ID = Utilities.GetUIID();
+                    newUser.USERNAME = !string.IsNullOrEmpty(req.username) ? req.username : "";
                     newUser.EMAIL = !string.IsNullOrEmpty(req.email) ? req.email : "";
                     newUser.PASSWORD = !string.IsNullOrEmpty(req.password) ? req.password : "";
                     newUser.FIRST_NAME = !string.IsNullOrEmpty(req.first_name) ? req.first_name : "";
                     newUser.LAST_NAME = !string.IsNullOrEmpty(req.last_name) ? req.last_name : "";
                     newUser.TEL = !string.IsNullOrEmpty(req.tel) ? req.tel : "";
                     newUser.GENDER = !string.IsNullOrEmpty(req.gender) ? req.gender : "";
-                    newUser.BIRTH_DATE = !string.IsNullOrEmpty(req.birth_date) ? DateTime.Parse(req.birth_date, CultureInfo.InvariantCulture) : null;
+                    newUser.BIRTH_DATE = !string.IsNullOrEmpty(req.birth_date) ? DateTime.Parse(req.birth_date, CultureInfo.InvariantCulture) : DateTime.MinValue;
                     newUser.IS_ACTIVE = 1;
                     newUser.IS_DELETE = 0;
-                    _dbContext.Users.Add(newUser);
+                    _dbContext.USERS.Add(newUser);
                     _dbContext.SaveChanges();
 
                     _transection.Commit();
@@ -147,7 +149,7 @@ public class UsersController : ControllerBase
 
             if (req.type == "admin")
             {
-                var resAdmin = _dbContext.Admin.FirstOrDefault(x => x.USERNAME == req.username && x.PASSWORD == req.password);
+                var resAdmin = _dbContext.ADMIN.FirstOrDefault(x => x.USERNAME == req.username && x.PASSWORD == req.password);
                 if (resAdmin != null)
                 {
                     data.id = resAdmin.ID;
@@ -168,7 +170,7 @@ public class UsersController : ControllerBase
             }
             else
             {
-                var resUsers = _dbContext.Users.FirstOrDefault(x => x.EMAIL == req.email && x.PASSWORD == req.password);
+                var resUsers = _dbContext.USERS.FirstOrDefault(x => x.USERNAME == req.username && x.PASSWORD == req.password);
                 if (resUsers != null)
                 {
                     data.id = resUsers.ID;

@@ -12,5 +12,8 @@ public class Users
     public int IS_DELETE { get; set; }
     public string TEL { get; set; }
     public string GENDER { get; set; }
-    public DateTime? BIRTH_DATE { get; set; }
+    public DateTime BIRTH_DATE { get; set; }
+    public DateTime CREATED_AT {get;set;}
+    public DateTime UPDATED_AT {get;set;}
+
 }

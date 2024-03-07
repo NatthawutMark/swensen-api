@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("swensen-api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f51e7d3abba3ec243013490deeae3634b281412c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a246d3417c9a2c9c224b8f1c30e8e38ca7dc02c")]
 [assembly: System.Reflection.AssemblyProductAttribute("swensen-api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("swensen-api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -65,7 +65,7 @@ public class testController : ControllerBase
         public string cage_id { get; set; }
     }
 
-    [HttpGet()]
+    [HttpGet("getUID")]
     public ActionResult getGUID()
     {
         List<string> str = new List<string>();
